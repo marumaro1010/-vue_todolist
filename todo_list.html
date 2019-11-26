@@ -1,0 +1,187 @@
+<html>
+    <head>
+        <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+        <link rel="stylesheet" href="css/bootstrap.min.css" >
+        <link rel="stylesheet" href="css/style.css" >
+        <script src="js/jquery.js"></script>
+        <script src="js/bootstrap.min.js"></script>
+        <!--引用vue-->
+        <script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
+    </head>
+    <body>
+        <div id="app" class="container">
+            <h2>{{title}}</h2>
+            <div class="col">
+                <div class="input-group mb-3">
+                    <input type="text" class="form-control" v-model="input_text" placeholder="新增代辦事項">
+                    <div class="input-group-append">
+                        <span v-on:click="add_list" class="input-group-text">新增</span>
+                    </div>
+                </div>
+                <div class="alert alert-primary" role="alert">
+                    未完成事項({{ plan_count }})
+                </div>
+                <div>
+                    <!--tab預設 0.全部 1.完成 2.未完成-->
+                    <a v-on:click="switch_tab(0)" class="btn btn-outline-info" v-bind:class="{active: type == 0}">全部 ({{ all_count }})</a>
+                    <a v-on:click="switch_tab(2)" class="btn btn-outline-info" v-bind:class="{active: type == 2}">未完成 ({{ plan_count }})</a>
+                    <a v-on:click="switch_tab(1)" class="btn btn-outline-info" v-bind:class="{active: type == 1}">已完成 ({{ complete_count }})</a>
+                </div>
+            </div>
+            <div class="col">
+              <ul class="list-group list-group-flush">
+                <li class="list-group-item" v-for="(todo,index) in todo_list">
+                  <!--顯示 op-->
+                  <input type="text" class="form-control input_list" v-if="todo.edit == true" v-model="todo.text" />
+                  <label v-else>{{ todo.text }}</label>
+                  <div class="btn_group">
+                    <!--顯示 ed-->
+                    <button class="btn btn-primary" v-on:click="mod_list(todo)">修改</button>
+                    <button class="btn btn-danger" v-on:click="remove_list(index)">移除</button>
+                    <button class="btn btn-success" v-if="todo.status == 'planning'" v-on:click="compelet_list(todo)">完成</button>
+                  </div>
+                </li>
+              </ul>
+            </div>
+        </div>
+    </body>
+</html>
+<script>
+var app = new Vue({
+  el:"#app",
+  data:{
+    title:'清單列表',
+    //陣列選項
+    todos:
+    [
+      {
+        "text":"和朋友吃大餐",
+        "status":"planning",
+        "edit": false
+      },
+      {
+        "text":"今日精油按摩",
+        "status":"completed",
+        "edit": false
+      },
+      {
+        "text":"讀書會",
+        "status":"planning",
+        "edit": false
+      },
+    ],
+    //表單預設為空
+    input_text:"",
+    //tab預設為全部
+    type:0
+  },
+  computed:
+  {
+      todo_list:function()
+      {
+          if(this.type == 0)
+          {
+             return this.todos
+          }
+          else
+          {
+            return this.get_data_list(this.type);
+          }
+      },
+      all_count:function()
+      {
+        return this.todos.length;
+      },
+      plan_count:function()
+      {
+        return Object.keys(this.get_data_list(2)).length;
+      },
+      complete_count:function()
+      {
+        return Object.keys(this.get_data_list(1)).length;
+      }
+  },
+  methods:
+  {
+      //新增
+      add_list:function()
+      {
+         //取得value
+         new_item = this.input_text;
+         //空值防呆
+         if(new_item == '')
+         {
+            alert('請輸入選項');
+            return false;
+         }
+         //新增至陣列
+         this.todos.push({
+             "text":new_item,
+             "edit":false,
+             "status":"planning"
+         });
+         //清空
+         new_item="";
+
+      },
+      //修改
+      mod_list:function(todo)
+      {
+        if(todo.edit == false)
+        {
+            todo.edit = true;
+        }
+        else
+        {
+            todo.edit = false;
+        }
+      },
+      //刪除
+      remove_list:function(index)
+      {
+        //刪除列表
+        this.todos.splice(index,1);
+      },
+      //切換tab
+      switch_tab:function(type)
+      {
+         //設定type值
+         this.type = type;
+      },
+      //完成項目
+      compelet_list:function(todo)
+      {
+         //設定type值
+         todo.status = 'completed';
+      },
+      //切換資料
+      get_data_list:function(type)
+      {
+         //預設
+         var todo_list ={};
+         var status_txt;
+
+         //tab切換
+         switch(type)
+         {
+            //已完成
+            case 1:
+                status_txt = 'completed';
+            break;
+            //進行中
+            case 2:
+                status_txt = 'planning';
+            break;
+         }
+         for(var key in this.todos)
+         {
+            if(this.todos[key].status == status_txt) 
+            {
+                todo_list[key] = this.todos[key];
+            }
+         }
+         return todo_list; 
+      } 
+  }
+});
+</script>

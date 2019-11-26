@@ -1,0 +1,11 @@
+
+.btn_group
+{
+    display: flex; 
+    justify-content: flex-end;
+}
+
+.input_list
+{
+    margin: 10px;
+}
